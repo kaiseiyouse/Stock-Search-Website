@@ -1,0 +1,26 @@
+{
+  "name": "stock",
+  "version": "1.0.0",
+  "description": "A stock search webpage",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "deploy": "gcloud app deploy",
+    "start": "node app.js"
+  },
+  "keywords": [
+    "stock"
+  ],
+  "author": "Ziwei Zhang",
+  "license": "ISC",
+  "engines": {
+    "node": ">=4.3.2"
+  },
+  "dependencies": {
+    "axios": "^0.17.0",
+    "body-parser": "^1.18.2",
+    "cors": "^2.8.4",
+    "express": "^4.16.2",
+    "xml2js": "^0.4.19"
+  }
+}

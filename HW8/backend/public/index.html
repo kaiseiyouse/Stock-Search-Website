@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>stock search</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+          integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
+            integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+            crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/angular_material/1.1.0/angular-material.min.css">
+    <link rel="script" href="js/angular-animate.min.js">
+    <link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-animate.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-aria.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-messages.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/gsap/1.10.3/TweenMax.min.js"></script>
+
+    <!-- Angular Material Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-material/1.1.5/angular-material.min.js"></script>
+
+    <script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+
+
+    <!--<script src="https://code.highcharts.com/highcharts.src.js"></script>-->
+    <!--<script src="https://code.highcharts.com/modules/series-label.js"></script>-->
+    <!--<script src="https://code.highcharts.com/modules/exporting.js"></script>-->
+    <script src="https://code.highcharts.com/stock/highstock.src.js"></script>
+    <script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
+
+    <!--bootstrap select-->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.4/css/bootstrap-select.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.4/js/bootstrap-select.min.js"></script>
+
+
+</head>
+<body>
+
+<div class="center-block">
+<!--search form-->
+<div class="container" id="search-container" >
+    <div class="row valign">
+
+
+        <div class="container col-sm-3">
+            <div class=" h5"><strong>Enter Stock Ticker Symbol:</strong><font color="red">*</font></div>
+        </div>
+
+
+        <div class="col-sm-6 text-left" ng-controller="DemoCtrl as ctrl" layout="column" ng-cloak="" ng-app="searchbox">
+            <!--<md-content >-->
+            <div class="h4 text-center" id="search-title"><strong>Stock Market Search</strong></div>
+            <form name="stockform" id="form1" style="margin-top: 5%" ng-submit="$event.preventDefault()">
+                <!--<p>Use <code>md-autocomplete</code> to search for matches from local or remote data sources.</p>-->
+                <md-autocomplete ng-disabled="ctrl.isDisabled" md-no-cache="" md-selected-item="ctrl.selectedItem"
+                                 md-search-text-change="ctrl.searchTextChange(ctrl.searchText)"
+                                 md-search-text="ctrl.searchText"
+                                 md-selected-item-change="ctrl.selectedItemChange(item)"
+                                 md-items="item in ctrl.querySearch(ctrl.searchText)" md-item-text="item"
+                                 md-min-length="0" placeholder="e.g. AAPL" ng-focus="ctrl.focus">
+                    <md-item-template>
+                        <span md-highlight-text="ctrl.searchText" md-highlight-flags="^i">{{item}}</span>
+                    </md-item-template>
+                    <md-not-found>
+                        No symbols matching "{{ctrl.searchText}}" were found.
+                        <!--<a ng-click="ctrl.newState(ctrl.searchText)">Create a new one!</a>-->
+                    </md-not-found>
+                </md-autocomplete>
+                <br>
+
+            </form>
+            <span id="hint" class="h5">Please enter a stock ticker symbol.</span>
+            <!--</md-content>-->
+        </div>
+
+
+        <div class="col-sm-3">
+            <div class="">
+                <button class="btn btn-primary" id="submitButton" disabled><span class="glyphicon glyphicon-search"></span>Get
+                    Quote
+                </button>
+                <button type="reset" class="btn btn-default" onclick="clearForm()"><span
+                        class="glyphicon glyphicon-refresh"></span>Clear
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container" id="h-rule"><hr></div>
+
+<!--result Area(fav-list)-->
+<div id="fav-list" class="center-block container">
+    <div  class="panel panel-default" >
+    <!-- Default panel contents -->
+        <!--panel heading-->
+        <div class="panel-heading" style="overflow:auto">
+            <span><b>Favorite List</b></span>
+            <span class="pull-right">
+                <span id="automatic-lable">Automatic Refresh</span>
+                <label class="checkbox-inline">
+                  <input type="checkbox" checked data-toggle="toggle" id="toggle-autorefresh">
+                </label>
+                <button class="btn btn-default"><span class="glyphicon glyphicon-refresh" onclick="refresh()"></span></button>
+                <button id="btn-arrow" class="btn btn-default" onclick="toggle()" disabled><span class="glyphicon glyphicon-chevron-right"></span></button>
+            </span>
+            <!--<span style="clear:both;"></span>-->
+        </div>
+
+        <!--panel body-->
+        <div class="panel-body row ">
+
+            <div class="col-sm-8">
+
+                <div class="row">
+                    <div class="col-md-6">
+                            <span class="" style="width: 90px; display: inline-block"><b>Sort by</b></span>
+
+                            <span class="">
+                                <select class="selectpicker show-tick" id="select-method" width="auto">
+                                    <option>Default</option>
+                                    <option>Symbol</option>
+                                    <option>Price</option>
+                                    <option>Change</option>
+                                    <option>Change Percent</option>
+                                    <option>Volume</option>
+                                </select>
+
+                            </span>
+                    </div>
+
+
+
+                    <div class="col-md-6">
+
+                        <span class="" style="width: 90px; display:inline-block;"><b>Order</b></span>
+
+                        <span class="">
+                            <select class="selectpicker show-tick" id="select-order" disabled width="auto">
+                                <option>Ascending</option>
+                                <option>Descending</option>
+                            </select>
+                        </span>
+
+                    </div>
+
+                    </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Fav Table -->
+        <div class="container-fluid">
+        <div class="table-responsive">
+            <table class="table table-striped" id="fav-table">
+                <tr>
+                    <th>Symbol</th>
+                    <th>Stock Price</th>
+                    <th>Change(Change Percent)</th>
+                    <th>Volume</th>
+                    <th></th>
+                </tr>
+            </table>
+        </div>
+        </div>
+
+    </div>
+</div>
+
+<!--resultArea(stock-details)-->
+<div id="stock-details" class="center-block container">
+    <div  class="panel panel-default">
+        <!-- Default panel contents -->
+        <div class="panel-heading">
+            <button class="btn btn-default controls" onclick="toggle()"><span class="glyphicon glyphicon-chevron-left"></span></button>
+            <span><b>Stock Details</b></span>
+        </div>
+        <div class="panel-body">
+            <ul class="nav nav-pills" role="tablist">
+                <li role="presentation" class="active"><a href="#currStock" aria-controls="currStock" role="tab" data-toggle="pill"><span class="glyphicon glyphicon-time"></span>&nbsp;Current Stock</a> </li>
+                <li role="presentation" ><a href="#chart" aria-controls="chart" role="tab" data-toggle="pill"><span class="glyphicon glyphicon-stats"></span>&nbsp;Historical Charts</a> </li>
+                <li role="presentation" ><a href="#news" aria-controls="news" role="tab" data-toggle="pill"><span class="glyphicon glyphicon-link"></span>&nbsp;News Feeds</a> </li>
+            </ul>
+
+            <hr>
+            <!-- Tab panes -->
+            <div class="tab-content">
+                <div role="tabpanel" class="tab-pane active" id="currStock">
+                    <!-- Detail Table -->
+                    <div class="row">
+                        <div class="container col-sm-6" style="overflow:auto">
+                            <div>
+                                <b>Stock Details</b>
+                                <div class="pull-right">
+                                    <button class="btn btn-default" id="btn-fav" disabled><img src="icons/star_empty.png" height="36" width="36"></button>
+                                    <button class="btn btn-default" id="btn-facebook" disabled><img src="icons/facebook.svg" width="36" height="36"></button>
+                                </div>
+                            </div>
+                            <div id="detail-table-container" style="margin-top: 32px; padding-top: 32px">
+
+                            </div>
+                        </div>
+
+                        <div class="container col-sm-6">
+                            <!-- Nav tabs -->
+                            <ul class="nav nav-tabs" role="tablist" id="chart-tabs">
+                                <li role="presentation" class="active"><a href="#Price" aria-controls="Price" role="tab" data-toggle="tab">Price</a></li>
+                                <li role="presentation"><a href="#SMA" aria-controls="SMA" role="tab" data-toggle="tab">SMA</a></li>
+                                <li role="presentation"><a href="#EMA" aria-controls="EMA" role="tab" data-toggle="tab">EMA</a></li>
+                                <li role="presentation"><a href="#STOCH" aria-controls="STOCH" role="tab" data-toggle="tab">STOCH</a></li>
+                                <li role="presentation"><a href="#RSI" aria-controls="RSI" role="tab" data-toggle="tab">RSI</a></li>
+                                <li role="presentation"><a href="#ADX" aria-controls="ADX" role="tab" data-toggle="tab">ADX</a></li>
+                                <li role="presentation"><a href="#CCI" aria-controls="CCI" role="tab" data-toggle="tab">CCI</a></li>
+                                <li role="presentation"><a href="#BBANDS" aria-controls="BBANDS" role="tab" data-toggle="tab">BBANDS</a></li>
+                                <li role="presentation"><a href="#MACD" aria-controls="MACD" role="tab" data-toggle="tab">MACD</a></li>
+                            </ul>
+
+                            <!-- Indicator chart tab panes -->
+                            <div class="tab-content" id="indicator-chart-container">
+                                <div role="tabpanel" class="tab-pane active" id="Price"></div>
+                                <div role="tabpanel" class="tab-pane" id="SMA"></div>
+                                <div role="tabpanel" class="tab-pane" id="EMA"></div>
+                                <div role="tabpanel" class="tab-pane" id="STOCH"></div>
+                                <div role="tabpanel" class="tab-pane" id="RSI"></div>
+                                <div role="tabpanel" class="tab-pane" id="ADX"></div>
+                                <div role="tabpanel" class="tab-pane" id="CCI"></div>
+                                <div role="tabpanel" class="tab-pane" id="BBANDS"></div>
+                                <div role="tabpanel" class="tab-pane" id="MACD"></div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                <div role="tabpanel" class="tab-pane" id="chart">
+                    <!--<div class="container" id="historical-chart"></div>-->
+                </div>
+                <div role="tabpanel" class="tab-pane" id="news"></div>
+            </div>
+        </div>
+
+
+    </div>
+</div>
+</div>
+<!--<script src="js/xml2json.js"></script>-->
+<script src="js/autocomplete.js"></script>
+<script src="js/generateEverything.js"></script>
+<script src="js/generateStockDetailsTable.js"></script>
+<script src="js/generateIndicatorCharts.js"></script>
+<script src="js/generateHistorical.js"></script>
+<script src="js/generateNews.js"></script>
+<script src="js/showAlert.js"></script>
+<script src="js/generateFavList.js"></script>
+<script src="js/refresh.js"></script>
+<script src="js/sortTable.js"></script>
+<script>
+    window.fbAsyncInit = function() {
+        FB.init({
+            appId            : '906998979470166',
+            autoLogAppEvents : true,
+            xfbml            : true,
+            version          : 'v2.11'
+        });
+    };
+
+    (function(d, s, id){
+        var js, fjs = d.getElementsByTagName(s)[0];
+        if (d.getElementById(id)) {return;}
+        js = d.createElement(s); js.id = id;
+        js.src = "https://connect.facebook.net/en_US/sdk.js";
+        fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+</script>
+
+
+<script>
+
+
+    try {loadFavList();}
+    catch (ex) {console.log(ex);}
+
+
+
+    //auto refresh
+    setTimeout(function () {
+        var autoRefreshHandler = window.setInterval(refresh, 30000);
+        $('#toggle-autorefresh').change(function () {
+            if ($(this).prop('checked')) {
+                autoRefreshHandler = setInterval(refresh, 30000);
+            } else clearInterval(autoRefreshHandler);
+        });
+    }, 10000);
+
+
+
+//    $('input').focus(function () {
+//        $("md-autocomplete").css('border', '2px solid blue');
+//    });
+//
+//    $('#form1 input').on('change', function (evt) {
+//        if($(evt.target).val().trim() !== '') {
+//            $('#submitButton').prop('disabled', 'false');
+//
+//        }
+//        else {
+//            $('#submitButton').prop('disabled', 'true');
+//            $('md-autocomplete-wrap').css('border', '2px solid red');
+//            $('#hint').css("visibility", "visible");
+//        }
+//    });
+
+
+
+    $("#submitButton").click(function () {
+        var sym = $('#form1 input').val().trim();
+        submitForm(sym);
+    });
+
+    function submitForm(symbol) {
+
+        showProgress();
+        $('#btn-facebook').prop('disabled', true);
+        $('#btn-fav').prop('disabled', true);
+
+        if($('#fav-list').css('display') !== 'none') {
+            toggle();
+        }
+
+        $('#btn-arrow').prop('disabled', false);
+        if(localStorage.getItem(symbol)) {
+            $('#btn-fav img').prop('src', './icons/star_filled.png');
+        }else {
+            $('#btn-fav img').prop('src', './icons/star_empty.png');
+        }
+        generateEverything(symbol);
+
+    }
+
+    function clearForm() {
+        $("#form1 input").val('').css("border", "");
+        $("#hint").css("visibility", "hidden");
+        $("md-progress-linear").css("display", "none");
+        $('#form1 button').css("visibility", "hidden");
+
+        $('#btn-arrow').prop('disabled', true);
+        if($('#fav-list').css('display') === 'none') {
+            toggle();
+        }
+        $('#submitButton').prop('disabled', 'true');
+        $('md-autocomplete-wrap').css('border', '');
+    }
+
+    function toggle() {
+        $('#stock-details').toggle("slide");
+        $('#fav-list').toggle("slide");
+    }
+
+
+
+
+</script>
+</body>
+</html>
